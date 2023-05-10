@@ -1,21 +1,45 @@
 //
 //  ContentView.swift
-//  NewGymGenie
+//  GymGenie
 //
-//  Created by Jake Meissner on 4/11/23.
+//  Created by Jake Meissner on 4/3/23.
 //
 
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+    @StateObject private var workoutData = WorkoutData()
+    @StateObject private var profileViewModel = ProfileViewModel()
+    @StateObject private var videoData = VideoData()
+    @State private var showSplashScreen: Bool = true
+    
+    init() {
+            workoutData.fetchRecentWorkouts()
+            profileViewModel.fetchUserData()
+            videoData.fetchRecentVideos()
         }
-        .padding()
+
+    var body: some View {
+        ZStack {
+            if showSplashScreen {
+                SplashScreenView()
+                    .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation(.easeInOut(duration: 1.5)) {
+                                showSplashScreen = false
+                            }
+                        }
+                    }
+            } else {
+                GreetingView(userName: "User")
+                    .environmentObject(workoutData)
+                    .environmentObject(profileViewModel)
+                    .environmentObject(videoData)
+            }
+        }
     }
 }
 
